@@ -20,6 +20,7 @@ import tempfile
 from datetime import datetime
 from subprocess import CalledProcessError
 from subprocess import check_output, STDOUT
+import platform
 
 import termios
 
@@ -55,7 +56,12 @@ NOT_LOCKED_SPLIT = "datastore is not locked. Run the `calicoctl datastore migrat
 POOL_NOT_EXIST_CIDR = "unable to find IP pool"
 INVALID_SPLIT_NUM = "number to split CIDR into is not a valid power of 2"
 POOL_TOO_SMALL = "is not large enough to be split into"
+arch_map = {
+    "x86_64": "amd64",
+    "s390x": "s390x",
+}
 
+arch = arch_map.get(platform.machine(), platform.machine())
 
 class CalicoctlOutput:
     """
@@ -248,7 +254,7 @@ def calicoctl(command, data=None, load_as_stdin=False, format="yaml", only_stdou
     elif data and not load_as_stdin:
         option_file = ' -f /tmp/input-data'
 
-    calicoctl_bin = os.environ.get("CALICOCTL", "/code/bin/calicoctl-linux-amd64")
+    calicoctl_bin = os.environ.get("CALICOCTL", "/code/bin/calicoctl-linux-{arch}".format(arch=arch))
 
     if allowVersionMismatch:
         calicoctl_bin += " --allow-version-mismatch"
