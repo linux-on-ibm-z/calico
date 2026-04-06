@@ -15,7 +15,6 @@ LIBBPF_CONTAINER_PATH = /go/src/github.com/projectcalico/calico/felix/bpf-gpl/li
 BPFGPL_CONTAINER_PATH = /go/src/github.com/projectcalico/calico/felix/bpf-gpl/
 LIBBPF_A = $(REPO_ROOT)/felix/bpf-gpl/libbpf/src/$(ARCH)/libbpf.a
 
-ifeq ($(ARCH), $(filter $(ARCH),amd64 arm64))
 # When cross-compiling, force lld as the linker — GNU ld is single-target,
 # while lld natively links the cross-arch ELF objects produced by clang.
 # (The cross sysroot itself is already supplied via CC's --sysroot flag.)
@@ -25,7 +24,6 @@ ifneq ($(CROSS_SYSROOT),)
 endif
 CGO_LDFLAGS = "-L$(LIBBPF_CONTAINER_PATH)/$(ARCH) $(CROSS_CGO_LDFLAGS) -lbpf -lelf -lz"
 CGO_CFLAGS = "-I$(LIBBPF_CONTAINER_PATH) -I$(BPFGPL_CONTAINER_PATH)"
-endif
 
 FIPS ?= false
 ifeq ($(FIPS),true)
@@ -66,10 +64,8 @@ endif
 $(BINDIR)/calico-cgo-$(ARCH): $(LIBBPF_A) $(SRC_FILES)
 ifeq ($(FIPS),true)
 	$(call build_cgo_boring_binary, ./, $@)
-else ifeq ($(ARCH),$(filter $(ARCH),amd64 arm64))
-	$(call build_cgo_binary, ./, $@)
 else
-	$(call build_binary, ./, $@)
+	$(call build_cgo_binary, ./, $@)
 endif
 
 # Race-enabled combined binary for Felix FV runs. The race detector requires
